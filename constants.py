@@ -5,3 +5,7 @@
 
 # CONSTANT_NAME = "value"
 # LOG_DIR = "logs"
+
+import os.path
+
+DATABASE_FILE_PATH = os.path.join(os.getcwd(), 'movies.db')
