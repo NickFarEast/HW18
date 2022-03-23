@@ -1,12 +1,21 @@
-from app.dao.director import DirectorDAO
+from app.dao.movie import  MovieDAO
 
 
-class DirectorService:
-    def __init__(self, dao: DirectorDAO):
+class  MovieService:
+    def __init__(self, dao:  MovieDAO):
         self.dao = dao
 
-    def get_one(self, did):
-        return self.dao.get_one(did)
+    def get_one(self, mid):
+        return self.dao.get_one(mid)
+
+    def get_movies_by_director(self, data):
+        return self.dao.get_movies_by_director(data)
+
+    def get_movies_by_year(self, data):
+        return self.dao.get_movies_by_year(data)
+
+    def get_movies_by_genre_id(self, data):
+        return self.dao.get_movies_by_genre(data)
 
     def get_all(self):
         return self.dao.get_all()
@@ -20,5 +29,5 @@ class DirectorService:
     def update_partial(self, data):
         pass
 
-    def delete(self, did):
-        return self.dao.delete(did)
+    def delete(self, mid):
+        return self.dao.delete(mid)

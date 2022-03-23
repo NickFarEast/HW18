@@ -6,7 +6,7 @@ from app.views.genre import genres_ns
 from config import Config
 
 
-from views.movie import movies_ns
+from app.views.movie import movies_ns
 from setup_db import db
 
 
@@ -21,7 +21,7 @@ def create_app(config: Config) -> Flask:
 def configure_app(application: Flask):
     db.init_app(application)
     api = Api(app)
-    # api.add_namespace(movies_ns)
+    api.add_namespace(movies_ns)
     api.add_namespace(directors_ns)
     api.add_namespace(genres_ns)
 

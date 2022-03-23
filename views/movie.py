@@ -1,7 +1,8 @@
 from flask_restx import Resource, Namespace
 
-from app.dao.model.movie import MoviesSchema, Movie
-from app.setup_db import db
+from app.dao.model.movie import MoviesSchema
+
+from app.implemented import movie_service
 
 from flask import request
 
@@ -14,30 +15,22 @@ movies_schema = MoviesSchema(many=True)
 @movies_ns.route('/')
 class MoviesView(Resource):
     def get(self):
-        """Функция для отображения всех фильмов в базе или с отображением по запросу режиссера и жанра """
-        movies_query = db.session.query(Movie)
-
+        """Функция для отображения всех фильмов в базе или с отображением по запросу режиссера, жанра или года выпуска """
         args = request.args
 
-        director_id = args.get('director_id')
-        if director_id is not None:
-            movies_query = movies_query.filter(Movie.director_id == director_id)
-            print(movies_query)
-
-        genre_id = args.get('genre_id')
-        if genre_id is not None:
-            movies_query = movies_query.filter(Movie.genre_id == genre_id)
-
-        movies = movies_query.all()
-
-        return movies_schema.dump(movies), 200
+        if 'director_id' in args:
+            return movies_schema.dump(movie_service.get_movies_by_director(args['director_id'])), 200
+        elif 'year' in args:
+            return movies_schema.dump(movie_service.get_movies_by_year(args['year'])), 200
+        elif 'genre_id' in args:
+            return movies_schema.dump(movie_service.get_movies_by_genre_id(args['genre_id'])), 200
+        else:
+            return movies_schema.dump(movie_service.get_all()), 200
 
     def post(self):
         """Функция для записи нового фильма в базу"""
-        movie = movie_schema.load(request.json)
-        new_movie = Movie(**movie)
-        with db.session.begin():
-            db.session.add(new_movie)
+        req_jason = movie_schema.load(request.json)
+        movie_service.create(req_jason)
         return "", 201
 
 
@@ -45,21 +38,19 @@ class MoviesView(Resource):
 class MovieView(Resource):
     def get(self, mid):
         """Функция для получения фильма из базы по ID"""
-        try:
-            movie = db.session.query(Movie).filter(Movie.id == mid).one()
-            return movie_schema.dump(movie), 200
-        except Exception as e:
-            return "", 404
+        movie = movie_service.get_one(mid)
+        return movie_schema.dump(movie), 200
 
     def put(self, mid):
         """Функция для внесения изменения в базу по ID"""
-        db.session.query(Movie).filter(Movie.id == mid).update(request.json)
-        db.session.commit()
+        req_jason = movie_schema.load(request.json)
+        req_jason["id"] = mid
+
+        movie_service.update(req_jason)
 
         return "", 204
 
     def delete(self, mid):
         """Функция для удаления из базы по ID"""
-        db.session.query(Movie).filter(Movie.id == mid).delete()
-        db.session.commit()
+        movie_service.delete(mid)
         return "", 204
